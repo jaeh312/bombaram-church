@@ -4,7 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>봄바람교회 (BomBaram Church) — 복음으로 사람과 세상을 새롭게 보는 온라인 공동체</title>
-    
+
+    <!-- 모바일 웹앱(PWA) 설정: 홈 화면 추가 시 앱 아이콘·전체화면 실행 -->
+    <meta name="description" content="복음으로 사람과 세상을 새롭게 보는 온라인 공동체, 봄바람교회">
+    <meta name="theme-color" content="#114C96">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="봄바람교회">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+    <!-- 카카오톡·문자 공유 미리보기 (Open Graph) -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="봄바람교회">
+    <meta property="og:title" content="봄바람교회 (BomBaram Church) — 복음으로 사람과 세상을 새롭게 보는 온라인 공동체">
+    <meta property="og:description" content="복음으로 사람과 세상을 새롭게 보는 온라인 공동체, 봄바람교회">
+    <meta property="og:url" content="https://jaeh312.github.io/bombaram-church/">
+    <meta property="og:image" content="https://jaeh312.github.io/bombaram-church/assets/icon-512.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:locale" content="ko_KR">
+
     <!-- Pretendard & Noto Sans KR 웹폰트 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1002,7 +1024,7 @@
     <!-- =========================================================
          [우측 하단 플로팅 유틸리티] 로컬 로고 PNG 직접 미리보기
          ========================================================= -->
-    <div class="fixed bottom-4 right-4 z-40 flex flex-col items-end">
+    <div class="hidden fixed bottom-4 right-4 z-40 flex flex-col items-end">
         <!-- 확장 패널 -->
         <div id="logoPreviewDrawer" class="hidden mb-2.5 w-80 sm:w-96 rounded-2xl bg-white border border-gray-200 shadow-2xl p-5 text-left">
             <div class="flex items-center justify-between mb-2">
