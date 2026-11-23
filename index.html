@@ -737,9 +737,21 @@
                                     </div>
                                 </div>
 
-                                <button type="submit" class="w-full py-4 px-6 rounded-2xl bg-bom-royal hover:bg-bom-royalDark text-white font-medium text-base shadow-soft transition-all duration-200 hover:-translate-y-0.5 cursor-pointer">
+                                <button id="prayerSubmitBtn" type="submit" class="w-full py-4 px-6 rounded-2xl bg-bom-royal hover:bg-bom-royalDark text-white font-medium text-base shadow-soft transition-all duration-200 hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 disabled:cursor-wait disabled:hover:translate-y-0">
                                     익명으로 안전하게 보내기
                                 </button>
+
+                                <!-- 자동 전송 실패 시 대체 안내 -->
+                                <p id="sendFallback" class="hidden mt-3 text-sm text-bom-royal bg-bom-royal/8 px-4 py-3 rounded-xl border border-bom-royal/20 leading-[1.7]">
+                                    지금 자동 전송이 되지 않았습니다. 아래 <strong>Google 설문지로 직접 남기기</strong>를 눌러 적어주신 내용을 다시 한 번 보내주세요.
+                                </p>
+
+                                <!-- Google 설문지 직접 열기 (브라우저 제약 시 대체 경로) -->
+                                <p class="mt-4 text-center text-xs text-bom-muted leading-relaxed">
+                                    보내기가 잘 되지 않으면
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeIgqAHZo822YSQs9cbs28VStGr8VZuW4krf3IJ3Wx26sGwDw/viewform" target="_blank" rel="noopener" class="font-semibold text-bom-royal underline underline-offset-2 hover:text-bom-royalDark">Google 설문지로 직접 남기기</a>
+                                    로도 보내실 수 있습니다. (같은 익명 창구입니다)
+                                </p>
                             </form>
 
                             <!-- 제출 완료 화면 (초기 숨김) -->
@@ -1314,7 +1326,18 @@
         });
 
         // 4. 익명 기도·질문 폼 인터랙션
+        // 제출 내용은 Google Form '[봄바람교회] 익명 기도·질문 나눔'으로 실제 전송됩니다.
+        // formId: 1AYaePP8qlwgXY6-4ELP-8oPIhZjimrp4ohdiFEWKQmI
+        const PRAYER_FORM_ENDPOINT = 'https://docs.google.com/forms/d/e/1FAIpQLSeIgqAHZo822YSQs9cbs28VStGr8VZuW4krf3IJ3Wx26sGwDw/formResponse';
+        const PRAYER_ENTRY = {
+            category: 'entry.388048959',   // 1. 어떤 이야기를 나누고 싶으신가요?
+            message: 'entry.144089662',    // 2. 마음을 담아 적어주세요 (익명 보장)
+            contact: 'entry.2070600318'    // 3. 회신 여부 및 연락처(선택)
+        };
+
         const prayerForm = document.getElementById('prayerForm');
+        const prayerSubmitBtn = document.getElementById('prayerSubmitBtn');
+        const sendFallback = document.getElementById('sendFallback');
         const prayerContent = document.getElementById('prayerContent');
         const charCount = document.getElementById('charCount');
         const formError = document.getElementById('formError');
@@ -1340,7 +1363,7 @@
             }
         }
 
-        prayerForm.addEventListener('submit', (e) => {
+        prayerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = prayerContent.value.trim();
             if (!text) {
@@ -1350,8 +1373,44 @@
             }
 
             const selectedCategory = prayerForm.querySelector('input[name="category"]:checked').value;
-            submittedBadge.textContent = `${selectedCategory} 접수 완료`;
+            const wantsReply = prayerForm.querySelector('input[name="replyOption"]:checked').value === 'want_reply';
+            const contact = replyContactInput.value.trim();
+            const contactValue = wantsReply
+                ? (contact ? `답장 요청 / ${contact}` : '답장 요청 (연락처 미기재)')
+                : '회신 불필요';
 
+            const body = new URLSearchParams();
+            body.append(PRAYER_ENTRY.category, selectedCategory);
+            body.append(PRAYER_ENTRY.message, text);
+            body.append(PRAYER_ENTRY.contact, contactValue);
+
+            const originalLabel = prayerSubmitBtn.textContent.trim();
+            prayerSubmitBtn.disabled = true;
+            prayerSubmitBtn.textContent = '보내는 중...';
+            sendFallback.classList.add('hidden');
+
+            let sent = false;
+            try {
+                await fetch(PRAYER_FORM_ENDPOINT, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body
+                });
+                sent = true;
+            } catch (err) {
+                sent = false;
+            } finally {
+                prayerSubmitBtn.disabled = false;
+                prayerSubmitBtn.textContent = originalLabel;
+            }
+
+            if (!sent) {
+                sendFallback.classList.remove('hidden');
+                showToast('전송이 되지 않았습니다. 아래 설문지 링크를 이용해 주세요.');
+                return;
+            }
+
+            submittedBadge.textContent = `${selectedCategory} 접수 완료`;
             prayerForm.classList.add('hidden');
             prayerSuccess.classList.remove('hidden');
             showToast('따뜻한 마음이 안전하게 전달되었습니다.');
@@ -1361,6 +1420,7 @@
             prayerForm.reset();
             charCount.textContent = '0자';
             formError.classList.add('hidden');
+            sendFallback.classList.add('hidden');
             replyContactBox.classList.add('hidden');
             prayerSuccess.classList.add('hidden');
             prayerForm.classList.remove('hidden');
